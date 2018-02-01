@@ -1,0 +1,15 @@
+program KillGrey;
+
+uses
+  Vcl.Forms, Windows,
+  Unit1 in 'Unit1.pas' {KillGreyForm};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  SetWindowLong(Application.Handle,GWL_EXSTYLE,WS_EX_TOOLWINDOW);
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TKillGreyForm, KillGreyForm);
+  Application.Run;
+end.

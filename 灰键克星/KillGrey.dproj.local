@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2018/01/05 08:27:18.000.699,=C:\Users\Administrator\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2018/01/26 15:06:29.000.139,=C:\Users\Administrator\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2018/01/26 15:06:46.000.300,C:\Users\Administrator\Documents\Embarcadero\Studio\Projects\Project1.dproj=C:\Users\Administrator\Documents\Embarcadero\Studio\Projects\KillGrey.dproj</Transaction>
+    <Transaction>2018/01/26 15:23:20.000.259,C:\Users\Administrator\Documents\Embarcadero\Studio\Projects\Unit1.pas=G:\Delphi Projects\灰键克星\Unit1.pas</Transaction>
+    <Transaction>2018/01/26 15:23:20.000.259,C:\Users\Administrator\Documents\Embarcadero\Studio\Projects\Unit1.dfm=G:\Delphi Projects\灰键克星\Unit1.dfm</Transaction>
+    <Transaction>2018/01/26 15:23:21.000.533,C:\Users\Administrator\Documents\Embarcadero\Studio\Projects\KillGrey.dproj=G:\Delphi Projects\灰键克星\KillGrey.dproj</Transaction>
+  </Transactions>
+</BorlandProject>
