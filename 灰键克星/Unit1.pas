@@ -1,5 +1,5 @@
 unit Unit1;
-//test messageS
+//test messageS1111
 interface
 
 uses
@@ -8,15 +8,15 @@ uses
   Winapi.ShellAPI, Vcl.Menus;
 
 const
-  WM_TRAYMSG = WM_USER + 101;                   //×Ô¶¨ÒåÍĞÅÌÏûÏ¢
+  WM_TRAYMSG = WM_USER + 101;                   //è‡ªå®šä¹‰æ‰˜ç›˜æ¶ˆæ¯
 
 const
-  NIF_INFO = $00000010;          //ÆøÅİÏÔÊ¾±êÖ¾
-  NIIF_NONE = $00000000;          //ÎŞÍ¼±ê
-  NIIF_INFO = $00000001;          //ĞÅÏ¢Í¼±ê
-  NIIF_WARNING = $00000002;          //¾¯¸æÍ¼±ê
-  NIIF_ERROR = $00000003;          //´íÎóÍ¼±ê
-  NIIF_USER = $00000004;          //XPÊ¹ÓÃhIconÍ¼±ê
+  NIF_INFO = $00000010;          //æ°”æ³¡æ˜¾ç¤ºæ ‡å¿—
+  NIIF_NONE = $00000000;          //æ— å›¾æ ‡
+  NIIF_INFO = $00000001;          //ä¿¡æ¯å›¾æ ‡
+  NIIF_WARNING = $00000002;          //è­¦å‘Šå›¾æ ‡
+  NIIF_ERROR = $00000003;          //é”™è¯¯å›¾æ ‡
+  NIIF_USER = $00000004;          //XPä½¿ç”¨hIconå›¾æ ‡
 
 type
   TNotifyIconDataEx = record
@@ -62,7 +62,7 @@ type
     procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
-    procedure WMTrayMsg(var Msg: TMessage); message WM_TRAYMSG;    //ÉùÃ÷ÍĞÅÌÏûÏ¢
+    procedure WMTrayMsg(var Msg: TMessage); message WM_TRAYMSG;    //å£°æ˜æ‰˜ç›˜æ¶ˆæ¯
     procedure WMSysCommand(var Msg: TMessage); message WM_SYSCOMMAND;
   public
     { Public declarations }
@@ -70,7 +70,7 @@ type
 
 var
   KillGreyForm: TKillGreyForm;
-  LgNotifyIcon: TNotifyIconDataEx;                    //¶¨ÒåÍĞÅÌÍ¼±ê½á¹¹Ìå
+  LgNotifyIcon: TNotifyIconDataEx;                    //å®šä¹‰æ‰˜ç›˜å›¾æ ‡ç»“æ„ä½“
   gbsw: Boolean;
 
 implementation
@@ -84,11 +84,11 @@ var
   cRect: TRect;
 begin
 
-  GetClassName(AhWnd, WndClassName, 254); //»ñÈ¡ÀàÃû
-  GetWindowText(AhWnd, WndCaption, 254); //»ñÈ¡¿Ø¼şcaption
-  GetWindowRect(AhWnd, cRect); //»ñÈ¡¿Ø¼şµÄRect
+  GetClassName(AhWnd, WndClassName, 254); //è·å–ç±»å
+  GetWindowText(AhWnd, WndCaption, 254); //è·å–æ§ä»¶caption
+  GetWindowRect(AhWnd, cRect); //è·å–æ§ä»¶çš„Rect
 
-//  if (string(wndCaption) = '²éÕÒ') then
+//  if (string(wndCaption) = 'æŸ¥æ‰¾') then
 //    SearchButtonHandle := AhWnd;
 //
 //  if (string(wndClassName) = 'Edit') then
@@ -107,13 +107,13 @@ begin
   if gbsw then
   begin
     gbsw := False;
-    Button1.Caption := '¼¤»î';
+    Button1.Caption := 'æ¿€æ´»';
     timer1.Enabled := False;
   end
   else
   begin
     gbsw := True;
-    Button1.Caption := 'Í£Ö¹';
+    Button1.Caption := 'åœæ­¢';
     timer1.Enabled := True;
   end;
 end;
@@ -146,12 +146,12 @@ begin
     cbSize := SizeOf(TNotifyIconDataEx);
     Wnd := Self.Handle;
     uID := 1;
-    uFlags := NIF_ICON + NIF_MESSAGE + NIF_TIP + NIF_INFO;   //Í¼±ê¡¢ÏûÏ¢¡¢ÌáÊ¾ĞÅÏ¢
+    uFlags := NIF_ICON + NIF_MESSAGE + NIF_TIP + NIF_INFO;   //å›¾æ ‡ã€æ¶ˆæ¯ã€æç¤ºä¿¡æ¯
     uCallbackMessage := WM_TRAYMSG;
     hIcon := Application.Icon.Handle;
-    szTip := '»Ò¼ü¿ËĞÇ';
+    szTip := 'ç°é”®å…‹æ˜Ÿ';
 //    szInfo := 'hint';
-//    szInfoTitle := 'ÌáÊ¾ĞÅÏ¢£¡';
+//    szInfoTitle := 'æç¤ºä¿¡æ¯ï¼';
     dwInfoFlags := NIIF_USER;
   end;
   Shell_NotifyIcon(NIM_ADD, @LgNotifyIcon);
@@ -199,7 +199,7 @@ begin
 
   if hhh <> 0 then
   begin
-    EnumChildWindows(hhh, @EnumChildWndProc, 0); //±éÀúµÇÂ¼´°ÌåÀïÃæµÄ×Ó¿Ø¼ş »ñÈ¡Æä¾ä±ú
+    EnumChildWindows(hhh, @EnumChildWndProc, 0); //éå†ç™»å½•çª—ä½“é‡Œé¢çš„å­æ§ä»¶ è·å–å…¶å¥æŸ„
 
   end;
 
@@ -213,7 +213,7 @@ begin
 end;
 
 {-------------------------------------------------------------------------------
- Description: ×Ô¶¨ÒåµÄÍĞÅÌÏûÏ¢
+ Description: è‡ªå®šä¹‰çš„æ‰˜ç›˜æ¶ˆæ¯
 -------------------------------------------------------------------------------}
 
 procedure TKillGreyForm.WMTrayMsg(var Msg: TMessage);
@@ -226,18 +226,18 @@ begin
         SetForegroundWindow(Self.Handle);
 //         ShowWindow(Self.Handle, SW_SHOW);
         WindowState := TWindowState(tag);
-        Visible := True;   //ÏÔÊ¾´°Ìå
+        Visible := True;   //æ˜¾ç¤ºçª—ä½“
       end;
     WM_RBUTTONDOWN:
       begin
-        SetForegroundWindow(Self.Handle);   //°Ñ´°¿ÚÌáÇ°
+        SetForegroundWindow(Self.Handle);   //æŠŠçª—å£æå‰
         GetCursorPos(p);
         PopupMenu1.Popup(p.X, p.Y);
       end;
   end;
 end;
 {-------------------------------------------------------------------------------
- Description: ½Ø»ñ´°Ìå×îĞ¡»¯ÏûÏ¢£¬×îĞ¡»¯µ½ÍĞÅÌ
+ Description: æˆªè·çª—ä½“æœ€å°åŒ–æ¶ˆæ¯ï¼Œæœ€å°åŒ–åˆ°æ‰˜ç›˜
 -------------------------------------------------------------------------------}
 
 procedure TKillGreyForm.WMSysCommand(var Msg: TMessage);
@@ -251,7 +251,7 @@ begin
   end
   else if Msg.WParam = SC_CLOSE then
 
-//    case Application.MessageBox('ÊÇ·ñÍË³ö³ÌĞò£¿', 'ÌáÊ¾', MB_YESNO + MB_ICONQUESTION +
+//    case Application.MessageBox('æ˜¯å¦é€€å‡ºç¨‹åºï¼Ÿ', 'æç¤º', MB_YESNO + MB_ICONQUESTION +
 //      MB_DEFBUTTON2) of
 //      IDYES:
 //        begin
