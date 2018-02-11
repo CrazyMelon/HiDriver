@@ -1,0 +1,16 @@
+unit Unit2;
+
+interface
+
+type
+  TIniData = record
+    Section: string;
+    Keyword: string;
+    Url: string;
+    MD5: string;
+  end;
+
+implementation
+
+end.
+

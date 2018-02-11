@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2018/02/11 19:28:13.000.738,=C:\Users\CrazyMelon\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2018/02/11 19:31:28.000.111,=C:\Users\CrazyMelon\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2018/02/11 19:36:56.000.959,F:\Delphi MyWork\ini file\Unit1.dfm=C:\Users\CrazyMelon\Documents\Embarcadero\Studio\Projects\Unit1.dfm</Transaction>
+    <Transaction>2018/02/11 19:36:56.000.959,F:\Delphi MyWork\ini file\Unit1.pas=C:\Users\CrazyMelon\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2018/02/11 19:36:58.000.219,F:\Delphi MyWork\ini file\Project1.dproj=C:\Users\CrazyMelon\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+    <Transaction>2018/02/11 19:38:55.000.796,=F:\Delphi MyWork\ini file\Unit2.pas</Transaction>
+    <Transaction>2018/02/11 19:42:19.000.072,F:\Delphi MyWork\ini file\datastructure.pas=F:\Delphi MyWork\ini file\Unit2.pas</Transaction>
+    <Transaction>2018/02/11 19:43:03.000.456,F:\Delphi MyWork\ini file\ProjectDataStrcut.pas=F:\Delphi MyWork\ini file\datastructure.pas</Transaction>
+    <Transaction>2018/02/11 19:43:21.000.039,F:\Delphi MyWork\ini file\ProjectDataStruct.pas=F:\Delphi MyWork\ini file\ProjectDataStrcut.pas</Transaction>
+    <Transaction>2018/02/11 23:09:36.565,F:\Delphi MyWork\ini file\MD5_Maker.dproj=F:\Delphi MyWork\ini file\Project1.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

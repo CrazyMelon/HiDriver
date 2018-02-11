@@ -1,0 +1,204 @@
+unit Unit1;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, System.IniFiles, Vcl.StdCtrls,
+  ProjectDataStruct, Generics.Collections{Delphi 泛型容器单元}   , IdHashMessageDigest,
+  IdGlobal, IdHash;
+
+type
+  TMythread = class(TThread)
+  protected
+    procedure Execute; override;
+  end;
+
+type
+  TForm1 = class(TForm)
+    Memo1: TMemo;
+    Button2: TButton;
+    procedure Button2Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+  private
+    { Private declarations }
+
+  public
+    { Public declarations }
+  end;
+
+type
+  TMD5 = class(TIdHashMessageDigest5);
+
+procedure SearchPath(path, filename: string; list: TStrings);
+
+function StreamToMD5(S: TFileStream): string;
+
+procedure AddFileList(filename: string; list: TList<TIniData>);
+
+procedure MakeMd5File;
+
+var
+  Form1: TForm1;
+  FileDir: string;
+  FileList: TList<TIniData>;
+  mythread: TMythread;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+
+  if mythread.Suspended then
+  begin
+    mythread.Resume;
+  end;
+
+end;
+
+procedure MakeMd5File;
+var
+  i: integer;
+  myini: TIniFile;
+  list: TStringList;
+  listname:string;
+begin
+  listname:= FileDir + 'filelist.ini';
+  list := TStringList.Create;
+  SearchPath(ExtractFilePath(Application.ExeName), '*.*', list);
+//  memo1.items:=list;
+  list.Free;
+
+
+  if FileList.Count <> 0 then
+  begin
+    myini := TIniFile.Create(listname);
+    for i := 0 to FileList.Count - 1 do
+    begin
+      myini.WriteString(FileList.Items[i].Section, 'URL', FileList.Items[i].Url);
+      myini.WriteString(FileList.Items[i].Section, 'MD5', FileList.Items[i].MD5);
+    end;
+
+    myini.EraseSection(ExtractFileName(Application.ExeName));
+    myini.EraseSection(ExtractFileName(listname));
+    myini.Free;
+  end;
+
+  ShowMessage('done!');
+
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  FileList := TList<TIniData>.Create;
+  FileDir := ExtractFilePath(Application.ExeName);
+  mythread := TMythread.Create(True);
+end;
+
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+  FileList.Free;
+end;
+
+procedure SearchPath(path, filename: string; list: TStrings);
+var
+  sr: TSearchRec;
+  iAttributes: Integer;
+  loacalName: string;
+
+  procedure SearchFile(path, filename: string; list: TStrings);
+  var
+    sr: TSearchRec;
+    iAttributes: Integer;
+  begin
+    iAttributes := 0;
+    iAttributes := iAttributes or faHidden;
+    if (FindFirst(path + '' + filename, iAttributes, sr) = 0) then
+    begin
+
+      list.Add(path + '' + sr.Name);
+      AddFileList(path + '' + sr.Name, FileList);
+
+      while (FindNext(sr) = 0) do
+      begin
+        list.Add(path + '' + sr.Name);
+        AddFileList(path + '' + sr.Name, FileList);
+      end;
+      FindClose(sr);
+    end;
+
+  end;
+
+begin
+  iAttributes := 0;
+  iAttributes := iAttributes or faDirectory;
+
+  SearchFile(path, filename, list);
+  Application.ProcessMessages;
+
+  if (FindFirst(path + '*.*', iAttributes, sr) = 0) then
+  begin
+    if (sr.Attr = iAttributes) then
+    begin
+      if ((sr.Name <> '.') and (sr.Name <> '..')) then
+      begin
+        SearchPath(path + '' + sr.Name + '\', filename, list);
+      end;
+    end;
+    while (FindNext(sr) = 0) do
+    begin
+      if (sr.Attr = iAttributes) then
+      begin
+        if ((sr.Name <> '.') and (sr.Name <> '..')) then
+          SearchPath(path + '' + sr.Name + '\', filename, list);
+      end;
+    end;
+  end;
+  FindClose(sr);
+
+end;
+
+
+//读文件MD5值
+function StreamToMD5(S: TFileStream): string;
+var
+  Md5Encode: TMD5;
+begin
+  Md5Encode := TMD5.Create;
+  try
+    Result := Md5Encode.HashStreamAsHex(S);
+  finally
+    Md5Encode.Free;
+  end;
+end;
+
+procedure AddFileList(filename: string; list: TList<TIniData>);
+var
+  filesen: TFileStream;
+  Tempfiledata: TIniData;
+begin
+
+  Tempfiledata.Section := ExtractFileName(filename);
+  Tempfiledata.Url := filename;
+
+  filesen := TFileStream.Create(filename, fmOpenRead or fmShareDenyNone);
+  Tempfiledata.MD5 := StreamToMD5(filesen);
+  filesen.Free;
+
+  list.Add(Tempfiledata);
+end;
+
+{ TMythread }
+
+procedure TMythread.Execute;
+begin
+  inherited;
+  FreeOnTerminate := True;
+  MakeMd5File;
+end;
+
+end.
+
