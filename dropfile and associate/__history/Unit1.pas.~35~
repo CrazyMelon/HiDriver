@@ -1,0 +1,878 @@
+unit Unit1;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.StdCtrls,
+  IniFiles, Registry, ShlObj, ActiveX, ComObj, ShellAPI, Vcl.ComCtrls, Vcl.ToolWin,
+  Vcl.ExtCtrls, Vcl.ImgList;
+//type
+//  TMyMenuItem = class(TMenuItem)
+//  procedure popmenu(Sender: TObject);
+//end;
+
+//---------------------开始：Delphi 7下添加此声明-------------------------------
+
+const
+  NIF_INFO = $00000010;          //气泡显示标志
+  NIIF_NONE = $00000000;          //无图标
+  NIIF_INFO = $00000001;          //信息图标
+  NIIF_WARNING = $00000002;          //警告图标
+  NIIF_ERROR = $00000003;          //错误图标
+  NIIF_USER = $00000004;          //XP使用hIcon图标
+
+type
+  TNotifyIconDataEx = record
+    cbSize: DWORD;
+    Wnd: HWND;
+    uID: UINT;
+    uFlags: UINT;
+    uCallbackMessage: UINT;
+    hIcon: HICON;
+    szTip: array[0..127] of Char;
+    dwState: DWORD;
+    dwStateMask: DWORD;
+    szInfo: array[0..255] of Char;
+    case Integer of
+      0:
+        (uTimeout: UINT);
+      1:
+        (uVersion: UINT;
+        szInfoTitle: array[0..63] of Char;
+        dwInfoFlags: DWORD);
+  end;
+
+const
+  WM_TRAYMSG = WM_USER + 101;                   //自定义托盘消息
+
+type
+  TForm1 = class(TForm)
+    MainMenu1: TMainMenu;
+    File1: TMenuItem;
+    Open1: TMenuItem;
+    N1: TMenuItem;
+    OpenDialog1: TOpenDialog;
+    Memo1: TMemo;
+    Exit1: TMenuItem;
+    N2: TMenuItem;
+    PopupMenu1: TPopupMenu;
+    Delete1: TMenuItem;
+    Button1: TButton;
+    Button2: TButton;
+    One1: TMenuItem;
+    two1: TMenuItem;
+    PopupMenu2: TPopupMenu;
+    Timer1: TTimer;
+    StatusBar1: TStatusBar;
+    ToolBar1: TToolBar;
+    ToolButton1: TToolButton;
+    ToolButton2: TToolButton;
+    ImageList1: TImageList;
+    SaveDialog1: TSaveDialog;
+    Edit1: TMenuItem;
+    Undo1: TMenuItem;
+    Cut1: TMenuItem;
+    Copy1: TMenuItem;
+    Paste1: TMenuItem;
+    Find1: TMenuItem;
+    N4: TMenuItem;
+    N5: TMenuItem;
+    Reference1: TMenuItem;
+    N3: TMenuItem;
+    Reopen1: TMenuItem;
+    Clearhistory1: TMenuItem;
+    ToolButton3: TToolButton;
+    ToolButton4: TToolButton;
+    ToolButton5: TToolButton;
+    Project1: TMenuItem;
+    Newproject1: TMenuItem;
+    Openproject1: TMenuItem;
+    ImageList2: TImageList;
+    About1: TMenuItem;
+    Help1: TMenuItem;
+    procedure FormCreate(Sender: TObject);
+    procedure Open1Click(Sender: TObject);
+    procedure Exit1Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure Delete1Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure One1Click(Sender: TObject);
+    procedure two1Click(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure ToolButton2Click(Sender: TObject);
+    procedure ToolButton1Click(Sender: TObject);
+    procedure Open1AdvancedDrawItem(Sender: TObject; ACanvas: TCanvas;
+      ARect: TRect; State: TOwnerDrawState);
+    procedure N1AdvancedDrawItem(Sender: TObject; ACanvas: TCanvas;
+      ARect: TRect; State: TOwnerDrawState);
+    procedure N3Click(Sender: TObject);
+    procedure Clearhistory1Click(Sender: TObject);
+//    procedure Button1Click(Sender: TObject);
+  private
+    { Private declarations }
+//    procedure sysmenu(var msg:TWMMenuSelect);message wm_syscommand;
+    procedure MyFileClick(Sender: TObject);
+    procedure WMTrayMsg(var Msg: TMessage); message WM_TRAYMSG;    //声明托盘消息
+    procedure WMSysCommand(var Msg: TMessage); message WM_SYSCOMMAND;
+    procedure dropFiles(var Msg: TMessage); message WM_DROPFILES;
+//    function trans(str: string):PAnsiChar;
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+  myinifile: Tinifile;
+  NotifyIcon: TNotifyIconDataEx;                    //定义托盘图标结构体
+  Mbitmap:Tbitmap;
+
+function AssignToProgram(strFileExtension, strDiscription, strExeFileName: string): boolean;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm1.MyFileClick(Sender: TObject);
+var
+  str: string;
+  id: Integer;
+  QQ: TMenuItem;
+begin
+  str := TMenuItem(Sender).Caption;
+  if Sender is TMenuItem then
+  begin
+    if FileExists(str) then
+    begin
+      QQ := TMenuItem.Create(nil);
+      QQ.Caption := str;
+      id := MainMenu1.Items.Items[0].Items[2].IndexOf(TMenuItem(Sender));
+      MainMenu1.Items.Items[0].Items[2].Delete(id);
+
+      Memo1.Lines.LoadFromFile(str);
+      MainMenu1.Items.Items[0].Items[2].Insert(0, QQ);
+      QQ.OnClick := MyFileClick;
+      Form1.Caption:= QQ.Caption;
+    end
+    else
+    begin
+      id := MainMenu1.Items.Items[0].Items[2].IndexOf(TMenuItem(Sender));
+      MainMenu1.Items.Items[0].Items[2].Delete(id);
+      ShowMessage('File not found');
+    end;
+  end;
+//   try
+//    Memo1.Lines.LoadFromFile(str);
+//   except
+//    MainMenu1.Items.Delete(MainMenu1.Items.IndexOf(TMenuItem(Sender)));
+//   end;
+  //Memo1.
+end;
+
+procedure TForm1.N1AdvancedDrawItem(Sender: TObject; ACanvas: TCanvas;
+  ARect: TRect; State: TOwnerDrawState);
+var
+  Mrect:Trect;
+begin
+//  acanvas.TextWidth(TMenuItem(Sender).Caption);
+//  mrect:= rect(0,0,mbitmap.Width,mbitmap.Height);
+//  acanvas.Draw(arect.Left,arect.Top-arect.Bottom,mbitmap);
+//  acanvas.TextRect(rect(arect.Left+mbitmap.Width+2,arect.Top,arect.Right,arect.Bottom),arect.Left+mbitmap.Width+2,arect.Top+3,TMenuItem(Sender).Caption);
+//  setbkmode(acanvas.Handle,TRANSPARENT);
+//  DrawText(acanvas.Handle,'我'+#13+'的'+#13+'菜'+#13+'单',-1,mrect,DT_LEFT+DT_Center);
+end;
+
+procedure TForm1.N3Click(Sender: TObject);
+var
+  reg: TRegistry; //声明一个TRegistry类变量
+begin
+  N3.Checked := not N3.Checked;
+  if N3.Checked then
+  begin
+       {开机启动}
+    reg := Tregistry.create;
+    reg.rootkey := HKEY_LOCAL_MACHINE;
+    if reg.openkey('SOFTWARE\Microsoft\Windows\CurrentVersion\Run', true) then
+    begin
+      if not reg.keyexists(Application.ExeName) then //if not exist ,add it!
+        reg.writestring('delphi test', Application.ExeName);
+      reg.CloseKey; //关闭注册表
+    end;
+    reg.Free; //释放变量所占内存
+  end
+  else
+  begin
+    reg := Tregistry.create;
+    reg.rootkey := HKEY_LOCAL_MACHINE;
+    if reg.openkey('SOFTWARE\Microsoft\Windows\CurrentVersion\Run', true) then
+    begin
+//      if reg.keyexists(Application.ExeName) then //if not exist ,add it!
+        reg.DeleteValue('delphi test');
+      reg.CloseKey; //关闭注册表
+    end;
+    reg.Free; //释放变量所占内存
+  end;
+
+end;
+
+procedure TForm1.Delete1Click(Sender: TObject);
+var
+  str: string;
+begin
+//  str := TMenuItem(Sender).Items[0];
+  MainMenu1.Items.Delete(MainMenu1.Items.IndexOf(TMenuItem(Sender)));
+end;
+
+procedure TForm1.Exit1Click(Sender: TObject);
+var
+  i: Integer;
+begin
+//  for I := 0 to MainMenu1.items.Items[0].Count-3 do
+//  begin
+//    MainMenu1.Items.items[0].Items[i].OnClick := MainMenu1.Items.items[0].Items[2].OnClick ;
+//  end;
+  Self.close;
+
+end;
+
+var
+  de: string = 'ValStr';
+{历史记录}
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  desname: string;
+  glAppPath: string;
+  i: Integer;
+  reg: TRegistry; //声明一个TRegistry类变量
+begin
+    {方法1 ini文件}
+  glAppPath := ExtractFilePath(Application.ExeName); //获取当前运行程序的路径
+  myinifile := Tinifile.Create(glAppPath + 'myini.ini');
+  try
+    for I := MainMenu1.Items.items[0].Items[2].Count - 1 downto 0 do
+    begin
+      desname := de + IntToStr(i);
+      myinifile.WriteString('MySection', desname, MainMenu1.Items.items[0].Items[2].Items[i].Caption);
+    end;
+
+  finally
+    myinifile.Free;
+  end;
+
+    {方法2 注册表}
+  reg := TRegistry.Create; //创建实例
+  reg.RootKey := HKEY_CURRENT_USER; //指定需要操作的注册表的主键
+  if reg.OpenKey('\Software\Delphi', true) then//如果打开成功则进行以下操作
+  begin
+    for I := MainMenu1.Items.items[0].Items[2].Count - 2 downto 0 do
+    begin
+      desname := de + IntToStr(i);
+      reg.WriteString(desname, MainMenu1.Items.items[0].Items[2].Items[i].Caption); //将需要保存的信息写入注册表
+    end;
+    reg.CloseKey; //关闭注册表
+  end;
+  reg.Free; //释放变量所占内存
+
+  shell_notifyicona(NIM_DELETE, @NotifyIcon);
+
+end;
+
+//function TForm1.trans(str: string):PAnsiChar;
+//var
+//// Str:string;
+// SN: Array [0..7] of AnsiChar;
+// I:Integer;
+//begin
+////  Str := '66778899';
+//  for I := 0 to Length(Str) - 1 do
+//  begin
+//    SN[I] := AnsiChar(Str[I+1]);
+//  end;
+//end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+var
+  i: Integer;
+  Filename: string;
+  glAppPath: string;
+  QQ: TMenuItem;
+  desname: string;
+  reg: TRegistry; //声明一个TRegistry类变量
+  strFileName: string;
+//  p:PAnsiChar;
+//  pp:TPopupMenu;
+begin
+  Memo1.Clear;
+  with NotifyIcon do
+  begin
+    cbSize := SizeOf(TNotifyIconDataEx);
+    Wnd := Self.Handle;
+    uID := 1;
+    uFlags := NIF_ICON + NIF_MESSAGE + NIF_TIP + NIF_INFO;   //图标、消息、提示信息
+    uCallbackMessage := WM_TRAYMSG;
+    hIcon := Application.Icon.Handle;
+    szTip := 'MY';
+    szInfo := 'hint';
+    szInfoTitle := '提示信息！';
+    dwInfoFlags := NIIF_USER;
+  end;
+//    with NotifyIcon do
+//  begin
+//    cbSize := SizeOf(TNotifyIconData);
+//    Wnd := Self.Handle;
+//    uID := 1;
+//    uFlags := NIF_ICON + NIF_MESSAGE + NIF_TIP;   //图标、消息、提示信息
+//    uCallbackMessage := WM_TRAYMSG;
+//    hIcon := Application.Icon.Handle;
+//    szTip := '托盘测试';
+//  end;
+
+  Shell_NotifyIcon(NIM_ADD, @NotifyIcon);
+
+  I := GetSystemMenu(Handle, false);
+  AppendMenu(i, MF_SEPARATOR, 0, nil);
+  AppendMenu(i, MF_STRING, 100, '我的菜单(&E)');
+
+
+{方法1 ini文件}
+//  glAppPath := ExtractFilePath(Application.ExeName);//获取当前运行程序的路径
+//  myinifile := Tinifile.Create(glAppPath + 'myini.ini');
+//
+//  for I := 2 to 100 do
+//  begin
+//    desname := de + IntToStr(i);
+//    Filename := myinifile.ReadString('MySection',desname,'');
+//    if Filename = '' then
+//      Break;
+//
+//    QQ:= TMenuItem.Create(nil);
+//    QQ.Caption:= Filename ;
+//    MainMenu1.Items.Items[0].Insert(i,QQ);
+//    QQ.OnClick := MyFileClick;
+//  end;
+//
+//  myinifile.Free;
+
+{方法2 注册表}
+  reg := TRegistry.Create; //创建实例
+  reg.RootKey := HKEY_CURRENT_USER; //指定需要操作的注册表的主键
+  if reg.OpenKey('\Software\Delphi', true) then//如果打开成功则进行以下操作
+  begin
+    for I := 0 to 10 do
+    begin
+      desname := de + IntToStr(i);
+      Filename := reg.ReadString(desname); //将需要保存的信息写入注册表
+      if Filename = '' then
+        Break;
+      QQ := TMenuItem.Create(nil);
+      QQ.Caption := Filename;
+      MainMenu1.Items.Items[0].Items[2].Insert(i, QQ);
+      QQ.OnClick := MyFileClick;
+    end;
+    reg.CloseKey; //关闭注册表
+  end;
+  reg.Free; //释放变量所占内存
+
+
+
+
+  strFileName := '';
+  for I := 1 to ParamCount do
+    strFileName := strFileName + ' ' + ParamStr(I);
+ // strFileName := ParamStr(1);
+
+  strFileName := Trim(strFileName);
+//  //用自己的代码打开它Play(strFileName)
+ //   ShowMessage(strFileName);
+
+  if strFileName <> '' then
+  begin
+
+    QQ := TMenuItem.Create(nil);
+    for I := 1 to MainMenu1.Items.Items[0].Items[2].Count - 1 do
+    begin
+      if MainMenu1.Items.Items[0].Items[2].Items[i].Caption = strFileName then
+      begin
+        MainMenu1.Items.Items[0].Items[2].Delete(i);
+        Break;
+      end;
+    end;
+    QQ.Caption := strFileName;
+    MainMenu1.Items.Items[0].Items[2].Insert(0, QQ);
+    Memo1.Lines.LoadFromFile(strFileName);
+    QQ.OnClick := MyFileClick;
+  end;
+
+  DragAcceptFiles(Handle, True); //第二个参数为False时，不启用文件拖放
+//  Mbitmap:=Tbitmap.Create;
+//  mbitmap.LoadFromFile('2.bmp');
+
+    reg := Tregistry.create;
+    reg.rootkey := HKEY_LOCAL_MACHINE;
+    if reg.openkey('SOFTWARE\Microsoft\Windows\CurrentVersion\Run', true) then
+    begin
+      if reg.ValueExists('delphi test') then //if not exist ,add it!
+//        reg.DeleteValue('delphi test');
+        N3.Checked:= True
+        else
+         N3.Checked:= False;
+      reg.CloseKey; //关闭注册表
+    end;
+    reg.Free; //释放变量所占内存
+
+end;
+
+procedure TForm1.One1Click(Sender: TObject);
+begin
+  SetForegroundWindow(Self.Handle);
+  WindowState := TWindowState(tag);
+  form1.Visible := True;
+end;
+
+procedure TForm1.Open1AdvancedDrawItem(Sender: TObject; ACanvas: TCanvas;
+  ARect: TRect; State: TOwnerDrawState);
+var
+  Mrect:Trect;
+begin
+//  acanvas.TextWidth(TMenuItem(Sender).Caption);
+//  mrect:= rect(0,0,mbitmap.Width,mbitmap.Height);
+//  acanvas.Draw(arect.Left,arect.Top-arect.Bottom,mbitmap);
+//  acanvas.TextRect(rect(arect.Left+mbitmap.Width+2,arect.Top,arect.Right,arect.Bottom),arect.Left+mbitmap.Width+2,arect.Top+3,TMenuItem(Sender).Caption);
+//  setbkmode(acanvas.Handle,TRANSPARENT);
+//  DrawText(acanvas.Handle,'我'+#13+'的'+#13+'菜'+#13+'单',-1,mrect,DT_LEFT+DT_Center);
+end;
+
+procedure TForm1.Open1Click(Sender: TObject);
+var
+  QQ: TMenuItem;
+  ValStr: string;   //字符串值
+  i: Integer;
+//  i:Integer;
+//  event: TNotifyEvent;
+begin
+  QQ := TMenuItem.Create(nil);
+  if OpenDialog1.Execute() then
+  begin
+    for I := 0 to MainMenu1.Items.Items[0].Items[2].Count - 1 do
+    begin
+      if MainMenu1.Items.Items[0].Items[2].Items[i].Caption = OpenDialog1.FileName then
+      begin
+        MainMenu1.Items.Items[0].Items[2].Delete(i);
+        break;
+      end;
+    end;
+
+    QQ.Caption := OpenDialog1.FileName;
+    MainMenu1.Items.Items[0].Items[2].Insert(0, QQ);
+    Memo1.Lines.LoadFromFile(OpenDialog1.FileName);
+    Form1.Caption:= QQ.Caption;
+    QQ.OnClick := MyFileClick;
+
+//    ValStr := OpenDialog1.FileName;
+//    try
+//      myinifile.WriteString('MySection' ,'ValStr' ,ValStr);
+//    finally
+//      myinifile.Free;
+//    end;
+//    for I := 2 to MainMenu1.items.Items[0].Count-3 do
+//    begin
+//      MainMenu1.Items.items[0].Items[i].OnClick := MyFileClick ;
+//    end;
+  end;
+
+end;
+
+procedure TForm1.Timer1Timer(Sender: TObject);
+var
+  ADate: TDateTime;
+  ss: string;
+  Days: array[1..7] of string;
+begin
+  days[1] := '星期日';
+  days[2] := '星期一';
+  days[3] := '星期二';
+  days[4] := '星期三';
+  days[5] := '星期四';
+  days[6] := '星期五';
+  days[7] := '星期六';
+  ADate := strtodate(FormatDateTime('yyyy/mm/dd', date));
+  ss := FormatDateTime('yyyy"年"m"月"d"日"hh:nn:ss', now);
+  StatusBar1.Panels[0].Text := '当前时间:' + ss + #32 + days[DayOfWeek(ADate)]+'    ';
+  StatusBar1.Panels[0].Alignment := taRightJustify;
+end;
+
+procedure TForm1.ToolButton1Click(Sender: TObject);
+begin
+  Memo1.Clear;
+end;
+
+procedure TForm1.ToolButton2Click(Sender: TObject);
+var
+s:string;
+begin
+  SaveDialog1.Filter := '*.aaf|*.aaf' ;//'文本文件(*.txt)|*.txt| *.gif|*.gif';
+ SaveDialog1.DefaultExt := 'aaf';
+ SaveDialog1.FilterIndex :=1;
+
+// //  SaveDialog1.Execute();
+   if SaveDialog1.Execute() then
+   begin
+ //     s:=   ExtractFileExt(SaveDialog1.FileName);
+      if SaveDialog1.FilterIndex = 1  then
+      begin
+        SaveDialog1.DefaultExt := 'aaf';
+        Memo1.lines.SaveToFile(SaveDialog1.FileName);
+      end
+      else
+      begin
+        SaveDialog1.DefaultExt := 'gif';
+        Memo1.lines.SaveToFile(SaveDialog1.FileName);
+      end;
+
+   end;
+
+
+end;
+
+procedure TForm1.two1Click(Sender: TObject);
+begin
+  shell_notifyicona(NIM_DELETE, @NotifyIcon);
+  Application.Terminate;
+end;
+
+//procedure TForm1.WMSysCommand(var msg:TWMMenuSelect);
+//begin
+////  if msg.IDItem = 100 then
+////  begin
+////    ShowMessage('checked');
+////  end
+////  else
+////  begin
+////    inherited;
+////  end;
+//
+//   if Msg.WParam = SC_ICON then
+//    Self.Visible := False
+//  else
+//    DefWindowProc(Self.Handle,Msg.Msg,Msg.WParam,Msg.LParam);
+//
+//end;
+
+
+{将文件类型strFileExtension与程序
+strExeFileName相关联,strDiscription为文件类型说明 }
+function AssignToProgram(strFileExtension, strDiscription, strExeFileName: string): boolean;
+var
+  registerTemp: TRegistry;
+begin
+  registerTemp := TRegistry.Create;
+  //建立一个Registry实例
+  with registerTemp do
+  begin
+    RootKey := HKEY_CLASSES_ROOT;
+    //设置根键值为HKEY_CLASSES_ROOT
+    //根据文件类型的扩展名，创建或打开对应的键名.FileExt,如DBF对应'.DBF'
+    if not OpenKey('.' + strFileExtension, true) then
+    begin
+      result := false;
+      exit;
+    end;
+//设置键.FileExt默认值为FileExt_Auto_File,如'.DBF'对应'DBF_Auto_File'
+    WriteString('', strFileExtension + '_Auto_File');
+    CloseKey;
+//写入自己程序的信息
+//根据文件类型的扩展名，创建或打开对应的键名
+ //   FileExt_Auto_File
+//'.DBF'对应'DBF_Auto_File'
+    if not OpenKey('.' + strFileExtension + '\' + strFileExtension + '_Auto_File', true) then
+    begin
+      result := false;
+      exit;
+    end;
+    //设置默认值文件类型说明,如DBF可对应'xBase数据表'
+    WriteString('', strDiscription);
+    CloseKey;
+//创建或打开键名FileExt_Auto_File\Shell\open\command,该键为表示操作为'打开'
+//'.DBF'对应'DBF_Auto_File\shell\open\command'
+    if not OpenKey('.' + strFileExtension + '\' + strFileExtension + '_Auto_File\shell\open\command', true) then
+    begin
+      result := false;
+      exit;
+    end;
+//设置该键的默认值为打开操作对应的程序信息
+//如DBF可对应'C:\Program Files\Borland\DBD\DBD32.EXE'
+    WriteString('', strExeFileName + ' %1');
+    CloseKey;
+    Free;
+  end;
+end;
+
+function SetAssociatedExec(FileExt, Filetype, FileDescription, MIMEType, ExecName: string): Boolean;{修改成功,返回True,否则False}
+var
+  Reg: TRegistry;
+begin
+  Result := False; {}
+  if (FileExt = '') or (ExecName = '') then
+    Exit; {绻募嘈臀栈蛘呙挥?br> 定义执行程序就退出,FileExt必须带".",如.BMP}
+  Reg := TRegistry.Create;
+  try
+    Reg.RootKey := HKey_Classes_Root;
+    if not Reg.OpenKey(FileExt, True) then
+      Exit;
+    Reg.WriteString('', FileType);
+    if MIMEType <> '' then
+      Reg.WriteString('Content Type', MIMEType);
+    Reg.CloseKey;
+    if not Reg.OpenKey(FileType, True) then
+      Exit;
+    Reg.WriteString('', FileDescription);
+    Reg.CloseKey;
+    if not Reg.OpenKey(FileType + '\' + 'shell\open\command', True) then
+      Exit;
+    reg.WriteString('', '"' + ParamStr(0) + '"%1');
+    ;
+    Reg.CloseKey;
+    reg.OpenKey(FileType + '\' + '\DefaultIcon', True);
+ // reg.WriteString('','C:\Users\Administrator\Desktop\cxtbsc32_veryhuo.com\ico'+',1');   //为0则为LetterA.ico图标，为1为LetterB.ico
+  //reg.WriteString('','"' + ParamStr(0) + '",1');
+    reg.WriteString('', 'F:\Delphi MyWork\file_new\Win32\Debug\ooopic_1458924531.ico');
+    Reg.CloseKey;
+  finally
+    Reg.Free;
+  end;
+ //SHChangeNotify(SHCNE_ASSOCCHANGED,SHCNF_IDLIST,nil,nil);  //刷新显示
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  memo1.lines.add('开始');
+  if SetAssociatedExec('.aaf', 'aafile', '测试', '', Application.ExeName) then
+    memo1.lines.add('成功')
+  else
+    memo1.lines.add('失败')
+end;
+//var
+//  reg: TRegistry;
+//begin
+//  reg := TRegistry.Create;
+//  try
+//    reg.RootKey := HKEY_CLASSES_ROOT;
+//    reg.OpenKey('.aaf',True);
+//    reg.WriteString('','aafFile');
+//    reg.CloseKey;
+//    reg.OpenKey('aafFile\shell\open\command',True);
+//    reg.WriteString('',ParamStr(0));  //带本身路径作为启动参数
+//    reg.CloseKey;
+//    reg.OpenKey('aafFile\DefaultIcon',True);
+//    reg.WriteString('','"' + ParamStr(0) + '",1');   //为0则为LetterA.ico图标，为1为LetterB.ico
+//    reg.CloseKey;
+//  finally
+//    reg.Free;
+//  end;
+// // SHChangeNotify(SHCNE_ASSOCCHANGED,SHCNF_IDLIST,nil,nil);  //刷新显示
+//end;
+
+function CreateShortcutOnDesktop(strExeFileName, strParameters: string): boolean;
+var
+  registerTemp: TRegistry;
+  strDesktopDirectory: widestring;
+  shelllinkTemp: IShellLink;
+  persistfileTemp: IPersistFile;
+  StartupDirectory: array[0..MAX_PATH] of Char;
+  PIDL: PItemIDList;
+begin
+  registerTemp := TRegistry.Create;
+//建立一个Registry实例
+  with registerTemp do
+  begin
+    RootKey := HKEY_CURRENT_USER;
+//设置根键值为HKEY_CURRENT_USER
+//找到Software\MicroSoft\Windows\CurrentVersion\Explorer\Shell Folders
+    if not OpenKey('Software\MicroSoft\Windows\CurrentVersion\Explorer\Shell Folders', True) then
+//写入自己程序的信息
+    begin
+      result := false;
+      exit;
+    end;
+//读取项目Desktop的值，即Desktop的实际路径
+    strDesktopDirectory := ReadString('Desktop');
+//善后处理
+    CloseKey;
+    Free;
+  end;
+
+//设置快捷方式的参数
+  shelllinkTemp := CreateComObject(CLSID_ShellLink) as IShellLink;
+  with shelllinkTemp do
+  begin
+    SetPath(PChar(strExeFileName));
+  //设置程序文件全名
+    SetArguments(PChar(strParameters));
+  //设置程序的命令行参数
+  //设置程序的工作目录
+    SetWorkingDirectory(Pchar(ExtractFilePath(strExeFileName)));
+  end;
+
+  SHGetSpecialFolderLocation(0, CSIDL_DESKTOPDIRECTORY, PIDL); //获得桌面的Itemidlist
+  shelllinkTemp.SetDescription('我的程序的描述');
+
+//构造快捷方式的文件名(.LNK)
+  strDesktopDirectory := strDesktopDirectory + '\' + ExtractFileName(strExeFileName);
+  strDesktopDirectory := copy(strDesktopDirectory, 1, length(strDesktopDirectory) - length(ExtractFileExt(strExeFileName))) + '.LNK';
+
+//保存快捷方式的文件
+  persistfileTemp := shelllinkTemp as IPersistFile;
+  if S_OK = persistfileTemp.Save(PWChar(strDesktopDirectory), false) then
+    result := true //保存成功，返回True
+  else
+    result := false;
+
+end;
+
+{调用CreateShortcutOnDesktop,为Delphi在桌面上建立快捷方式 }
+procedure TForm1.Button2Click(Sender: TObject);
+var
+  tmpObject: IUnknown;
+  tmpSLink: IShellLink;
+  tmpPFile: IPersistFile;
+  PIDL: PItemIDList;
+  StartupDirectory: array[0..MAX_PATH] of Char;
+  StartupFilename: string;
+  LinkFilename: WideString;
+begin
+////创建快捷方式到桌面
+//StartupFilename :=Application.ExeName;
+//tmpObject := CreateComObject(CLSID_ShellLink);//创建建立快捷方式的外壳扩展
+//tmpSLink := tmpObject as IShellLink;//取得接口
+//tmpPFile := tmpObject as IPersistFile;//用来储存*.lnk文件的接口
+//tmpSLink.SetPath(pChar(StartupFilename));//设定所在路径
+//tmpSLink.SetWorkingDirectory(pChar(ExtractFilePath(StartupFilename)));//设定工作目录
+//SHGetSpecialFolderLocation(0,CSIDL_DESKTOPDIRECTORY,PIDL);//获得桌面的Itemidlist
+//tmpSLink.SetDescription('我的程序的描述');
+//tmpSLink.SetIconLocation(Pchar(StartupFilename),3);
+//SHGetPathFromIDList(PIDL,StartupDirectory);//获得桌面路径
+//LinkFilename := StartupDirectory + '\我的程序.lnk';
+//tmpPFile.Save(pWChar(LinkFilename),FALSE);//保存*.lnk文件
+
+  CreateShortcutOnDesktop('F:\Delphi MyWork\file_new\Win32\Debug\Project2.exe', '');
+end;
+
+procedure TForm1.Clearhistory1Click(Sender: TObject);
+var
+  i:Integer;
+  reg:TRegistry;
+    desname: string;
+    Filename:string;
+begin
+    for I := MainMenu1.Items.Items[0].Items[2].Count - 2 downto 0 do
+    begin
+      MainMenu1.Items.Items[0].Items[2].Delete(i);
+    end;
+
+  reg := TRegistry.Create; //创建实例
+  reg.RootKey := HKEY_CURRENT_USER; //指定需要操作的注册表的主键
+  if reg.OpenKey('\Software\Delphi', true) then//如果打开成功则进行以下操作
+  begin
+    for I := 0 to 10 do
+    begin
+      desname := de + IntToStr(i);
+      Filename := reg.ReadString(desname); //将需要保存的信息写入注册表
+      if Filename = '' then
+        Break;
+      reg.DeleteValue(desname);
+    end;
+    reg.CloseKey; //关闭注册表
+  end;
+  reg.Free; //释放变量所占内存
+
+end;
+
+{-------------------------------------------------------------------------------
+ Description: 窗体销毁时，卸载托盘
+-------------------------------------------------------------------------------}
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+  Shell_NotifyIcon(NIM_DELETE, @NotifyIcon);
+end;
+{-------------------------------------------------------------------------------
+ Description: 截获窗体最小化消息，最小化到托盘
+-------------------------------------------------------------------------------}
+
+procedure TForm1.WMSysCommand(var Msg: TMessage);
+begin
+  if Msg.WParam = SC_ICON then
+    Self.Visible := False
+  else
+    DefWindowProc(Self.Handle, Msg.Msg, Msg.WParam, Msg.LParam);
+
+  if TWMMenuSelect(Msg).IDItem = 100 then
+  begin
+    ShowMessage('checked');
+  end
+  else
+  begin
+    inherited;
+  end;
+end;
+{-------------------------------------------------------------------------------
+ Description: 自定义的托盘消息
+-------------------------------------------------------------------------------}
+
+procedure TForm1.WMTrayMsg(var Msg: TMessage);
+var
+  p: TPoint;
+begin
+  case Msg.LParam of
+    WM_LBUTTONDOWN:
+      begin
+        SetForegroundWindow(Self.Handle);
+//         ShowWindow(Self.Handle, SW_SHOW);
+        WindowState := TWindowState(tag);
+        Visible := not Visible;   //显示窗体
+      end;
+    WM_RBUTTONDOWN:
+      begin
+        SetForegroundWindow(Self.Handle);   //把窗口提前
+        GetCursorPos(p);
+        PopupMenu2.Popup(p.X, p.Y);
+      end;
+  end;
+
+end;
+
+{文件拖动}
+procedure TForm1.DropFiles(var Msg: TMessage);
+var
+  buffer: array[0..1024] of Char;
+  buf: string;
+  i, Res: Integer;
+  Node: TTreeNode;
+  QQ: TMenuItem;
+begin
+  inherited;
+  buffer[0] := #0;
+  DragQueryFile(Msg.WParam, 0, buffer, sizeof(buffer)); //第一个文件
+
+  memo1.Lines.LoadFromFile(buffer);
+
+  QQ := TMenuItem.Create(nil);
+  for I := 0 to MainMenu1.Items.Items[0].Items[2].Count - 1 do
+  begin
+    if MainMenu1.Items.Items[0].Items[2].Items[i].Caption = buffer then
+    begin
+      MainMenu1.Items.Items[0].Items[2].Delete(i);
+      Break;
+    end;
+  end;
+  QQ.Caption := buffer;
+  MainMenu1.Items.Items[0].Items[2].Insert(0, QQ);
+  Memo1.Lines.LoadFromFile(buffer);
+  Form1.Caption:= QQ.Caption;
+  QQ.OnClick := MyFileClick;
+
+end;
+
+end.
+
